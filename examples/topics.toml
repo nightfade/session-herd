@@ -1,0 +1,53 @@
+# Example registry. Copy to ~/.config/session-herd/topics.toml (or run `herd init`).
+# Paths are relative to `root` unless absolute. Every session starts in `root`;
+# a topic's `dir` is only mentioned in its opening prompt.
+
+[defaults]
+root = "~/work"
+language = "en"            # en | zh: CLI text, launch prompts, handoff labels
+claude = "claude"          # launch commands; add your usual flags here
+codex = "codex"
+# handoff_heading = "## Handoff"
+
+[manager]
+inbox = "append the thought as a bullet to notes/inbox.md"
+journal = "append to notes/daily/<today>.md under '## Sessions', one bullet per topic"
+
+[topics.herd]               # the manager itself
+label = "Herd"
+scope = "personal"
+kind = "exec"
+dir = "."
+tool = "claude"
+color = "gray"
+prompt = "/herd"
+
+[topics.api]
+label = "API service"
+scope = "work"
+kind = "exec"               # an agent that works on its own; fine to run several in parallel
+dir = "services/api"
+entry = "services/api/AGENTS.md"
+handoff = "services/api/HANDOFF.md"
+tool = "codex"
+color = "blue"
+
+[topics.invest]
+label = "Investing"
+scope = "personal"
+kind = "think"              # needs your full attention; keep one think topic open at a time
+dir = "notes/investing"
+entry = "notes/investing/README.md"
+tool = "claude"
+color = "green"
+
+[topics.journal]
+label = "Journal"
+scope = "personal"
+kind = "think"
+dir = "notes/private"
+entry = "notes/private/handoff.md"
+tool = "claude"
+color = "purple"
+private = true              # the manager never reads, types into or closes it
+prompt = "Read notes/private/handoff.md and start the way it says."
