@@ -168,7 +168,9 @@ def cmd_tag(ctx, args):
     if args.topic not in ctx.cfg.topics:
         sys.exit(ctx.m("unknown_topic", key=args.topic, known=", ".join(ctx.cfg.topics)))
     r = ctx.one(args.id)
-    ctx.backend.tag(r.terminal, args.topic, args.thread)
+    t = ctx.cfg.topics[args.topic]
+    label = t.get("label", args.topic) + (f"·{args.thread}" if args.thread else "")
+    ctx.backend.tag(r.terminal, args.topic, args.thread, label, COLORS.get(t.get("color", "gray"), COLORS["gray"]))
     # The state record too: `herd whoami` inside that session reads it.
     for f, d in _state_records(r.terminal):
         d.update(topic=args.topic, thread=args.thread)

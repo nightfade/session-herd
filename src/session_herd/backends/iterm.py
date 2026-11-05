@@ -95,10 +95,19 @@ class ITerm2Backend(Backend):
 
         self._with_session(sid, action)
 
-    def tag(self, sid, topic, thread):
+    @staticmethod
+    async def _style(s, topic, thread, label, rgb):
+        await s.async_set_variable(TOPIC_VAR, topic)
+        await s.async_set_variable(THREAD_VAR, thread)
+        change = iterm2.LocalWriteOnlyProfile()
+        change.set_tab_color(iterm2.Color(*rgb))
+        change.set_use_tab_color(True)
+        change.set_badge_text(label)
+        await s.async_set_profile_properties(change)
+
+    def tag(self, sid, topic, thread, label, rgb):
         async def action(conn, app, s):
-            await s.async_set_variable(TOPIC_VAR, topic)
-            await s.async_set_variable(THREAD_VAR, thread)
+            await self._style(s, topic, thread, label, rgb)
 
         self._with_session(sid, action)
 
@@ -110,13 +119,7 @@ class ITerm2Backend(Backend):
                 s = window.current_tab.current_session
             else:
                 s = (await window.async_create_tab()).current_session
-            await s.async_set_variable(TOPIC_VAR, topic)
-            await s.async_set_variable(THREAD_VAR, thread)
-            change = iterm2.LocalWriteOnlyProfile()
-            change.set_tab_color(iterm2.Color(*rgb))
-            change.set_use_tab_color(True)
-            change.set_badge_text(label)
-            await s.async_set_profile_properties(change)
+            await self._style(s, topic, thread, label, rgb)
             await s.async_send_text(command + "\r")
             await s.async_activate(select_tab=True, order_window_front=True)
             await asyncio.sleep(0.5)  # let the layout-change refresh finish before disconnecting

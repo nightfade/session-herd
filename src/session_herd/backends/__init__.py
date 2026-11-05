@@ -40,7 +40,8 @@ class Backend:
         """Open a new tab, tag it with topic/thread, run command in it. Returns the new session id."""
         raise NotImplementedError
 
-    def tag(self, sid, topic, thread):
+    def tag(self, sid, topic, thread, label, rgb):
+        """Tag the session with topic/thread and give it the topic's tab color and badge."""
         raise NotImplementedError
 
 
