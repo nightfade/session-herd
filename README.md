@@ -66,6 +66,9 @@ language = "en"        # en | zh
 claude = "claude"      # launch commands, with your usual flags
 codex = "codex"
 
+[scopes.work]          # per-scope launch commands, override [defaults]
+claude = "claude --model sonnet"
+
 [manager]
 inbox = "append the thought to notes/inbox.md"
 journal = "append to notes/daily/<today>.md"
@@ -80,6 +83,7 @@ handoff = "notes/investing/HANDOFF.md" # where /park writes; defaults to entry
 tool = "claude"        # claude | codex
 color = "green"
 private = false        # true: the manager never reads, types into or closes it
+# command = "..."      # launch command for this topic only; overrides scopes and defaults
 # prompt = "..."       # replaces the default opening prompt
 ```
 

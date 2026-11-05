@@ -142,3 +142,17 @@ def test_every_message_formats_in_every_language():
         for msgid, text in table.items():
             fields = {f for _, f, _, _ in string.Formatter().parse(text) if f}
             msg(lang, msgid, **{f: "x" for f in fields})  # e.g. a {key} placeholder must not clash
+
+
+def test_agent_command_precedence(tmp_path):
+    p = tmp_path / "t.toml"
+    p.write_text(
+        '[defaults]\nclaude = "claude --internet"\n[scopes.work]\nclaude = "claude"\n'
+        '[topics.a]\nscope = "work"\n[topics.b]\nscope = "personal"\n'
+        '[topics.c]\nscope = "work"\ncommand = "claude --x"\n[topics.d]\ntool = "codex"\nscope = "work"\n'
+    )
+    cfg = config.load(p)
+    assert cfg.agent_command("a") == "claude"
+    assert cfg.agent_command("b") == "claude --internet"
+    assert cfg.agent_command("c") == "claude --x"
+    assert cfg.agent_command("d") == "codex"

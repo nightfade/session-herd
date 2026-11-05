@@ -9,6 +9,10 @@ claude = "claude"          # launch commands; add your usual flags here
 codex = "codex"
 # handoff_heading = "## Handoff"
 
+# Per-scope launch commands override [defaults]; a topic's own `command` overrides both.
+[scopes.work]
+claude = "claude --model sonnet"
+
 [manager]
 inbox = "append the thought as a bullet to notes/inbox.md"
 journal = "append to notes/daily/<today>.md under '## Sessions', one bullet per topic"

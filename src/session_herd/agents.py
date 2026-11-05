@@ -149,7 +149,7 @@ def launch_command(cfg, key, thread, prompt):
     env = f"HERD_TOPIC={shlex.quote(key)}"
     if thread:
         env += f" HERD_THREAD={shlex.quote(thread)}"
-    cmd = cfg.defaults.get(tool, tool)
+    cmd = cfg.agent_command(key)
     if tool == "claude":
         cmd += f" --name {shlex.quote(label)}"
     return f"cd {shlex.quote(str(cfg.root))} && {env} {cmd} {shlex.quote(prompt)}"

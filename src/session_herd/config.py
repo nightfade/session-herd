@@ -36,6 +36,7 @@ class Config:
     defaults: dict
     topics: dict = field(default_factory=dict)
     manager: dict = field(default_factory=dict)
+    scopes: dict = field(default_factory=dict)
     path: Path = CONFIG_FILE
 
     @property
@@ -63,6 +64,13 @@ class Config:
                 best, best_len = key, len(d)
         return best
 
+    def agent_command(self, key):
+        """How to start the topic's agent: the topic's `command`, else [scopes.<scope>], else [defaults]."""
+        t = self.topics[key]
+        tool = t.get("tool", "claude")
+        scoped = self.scopes.get(t.get("scope", ""), {})
+        return t.get("command") or scoped.get(tool) or self.defaults.get(tool, tool)
+
     def handoff_file(self, key):
         t = self.topics.get(key, {})
         return self.resolve(t.get("handoff") or t.get("entry"))
@@ -75,6 +83,7 @@ def load(path=None):
         defaults={**DEFAULTS, **raw.get("defaults", {})},
         topics=raw.get("topics", {}),
         manager=raw.get("manager", {}),
+        scopes=raw.get("scopes", {}),
         path=path,
     )
 
