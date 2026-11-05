@@ -277,7 +277,14 @@ def cmd_whoami(ctx, args):
     cfg = ctx.cfg
     me = _own_terminal(ctx)
     rec = max((d for _, d in _state_records(me)), key=lambda d: d.get("updated", 0), default={})
-    key = os.environ.get("HERD_TOPIC") or rec.get("topic") or cfg.topic_for_cwd(os.getcwd())
+    # `herd tag` on a session with no hook record yet only reaches the terminal's own tag.
+    try:
+        own = next((s for s in ctx.backend.list() if s.id == me), None)
+    except Exception:
+        own = None
+    tag_topic, tag_thread = (own.topic, own.thread) if own else ("", "")
+    key = os.environ.get("HERD_TOPIC") or tag_topic or rec.get("topic") or cfg.topic_for_cwd(os.getcwd())
+    thread = os.environ.get("HERD_THREAD") or tag_thread or rec.get("thread", "")
     t = cfg.topics.get(key, {})
     handoff = cfg.handoff_file(key) if t else None
     print(
@@ -285,7 +292,7 @@ def cmd_whoami(ctx, args):
             dict(
                 topic=key,
                 label=t.get("label", ""),
-                thread=os.environ.get("HERD_THREAD") or rec.get("thread", ""),
+                thread=thread,
                 scope=t.get("scope", ""),
                 private=bool(t.get("private")),
                 language=ctx.lang,
