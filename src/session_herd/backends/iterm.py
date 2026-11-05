@@ -120,7 +120,9 @@ class ITerm2Backend(Backend):
             else:
                 s = (await window.async_create_tab()).current_session
             await self._style(s, topic, thread, label, rgb)
-            await s.async_send_text(command + "\r")
+            # The new tab takes focus at once, so keys the user is typing elsewhere can land in its
+            # shell first. Ctrl-U clears that partial line before the command goes in.
+            await s.async_send_text("\x15" + command + "\r")
             await s.async_activate(select_tab=True, order_window_front=True)
             await asyncio.sleep(0.5)  # let the layout-change refresh finish before disconnecting
             return s.session_id
