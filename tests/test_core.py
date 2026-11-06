@@ -156,3 +156,16 @@ def test_agent_command_precedence(tmp_path):
     assert cfg.agent_command("b") == "claude --internet"
     assert cfg.agent_command("c") == "claude --x"
     assert cfg.agent_command("d") == "codex"
+
+
+def test_resume_command_uses_session_cwd_and_scope(tmp_path):
+    p = tmp_path / "t.toml"
+    p.write_text(
+        '[defaults]\nroot = "/r"\nclaude = "claude --internet"\n[scopes.work]\nclaude = "claude"\n'
+        '[topics.posts]\nscope = "work"\nlabel = "Posts"\n'
+    )
+    cfg = config.load(p)
+    cmd = agents.resume_command(cfg, "posts", "gm", "claude", "abc-123", "/r/sub")
+    assert cmd == "cd /r/sub && HERD_TOPIC=posts HERD_THREAD=gm claude --resume abc-123"
+    assert agents.resume_command(cfg, "", "", "codex", "x", "") == "cd /r && codex resume x"
+    assert agents.resume_command(cfg, "", "", "claude", "x", "/r") == "cd /r && claude --internet --resume x"

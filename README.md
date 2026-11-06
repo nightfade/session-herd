@@ -41,6 +41,7 @@ Codex runs hooks only with `[features] hooks = true` in `~/.codex/config.toml`, 
 | see every session | `herd status` |
 | register a topic | `herd add garden --label Garden --dir notes/garden --kind think` |
 | leave a session | type `/park` in it, then close the tab |
+| reopen a closed session | `herd resume <session-id> --topic api`. Picks Claude or Codex from the id and starts in the session's original directory |
 | start the manager | `herd open herd`, or type `/herd` in any Claude session |
 
 A short alias helps: `alias t='herd open'`.

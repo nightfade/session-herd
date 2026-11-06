@@ -64,12 +64,15 @@ class Config:
                 best, best_len = key, len(d)
         return best
 
-    def agent_command(self, key):
-        """How to start the topic's agent: the topic's `command`, else [scopes.<scope>], else [defaults]."""
-        t = self.topics[key]
-        tool = t.get("tool", "claude")
+    def agent_command(self, key, tool=None):
+        """How to start an agent for the topic: the topic's `command` (when `tool` is the topic's own
+        tool), else [scopes.<scope>], else [defaults]. An unknown or empty key uses [defaults]."""
+        t = self.topics.get(key, {})
+        own = t.get("tool", "claude")
+        tool = tool or own
         scoped = self.scopes.get(t.get("scope", ""), {})
-        return t.get("command") or scoped.get(tool) or self.defaults.get(tool, tool)
+        topic_cmd = t.get("command") if tool == own else None
+        return topic_cmd or scoped.get(tool) or self.defaults.get(tool, tool)
 
     def handoff_file(self, key):
         t = self.topics.get(key, {})

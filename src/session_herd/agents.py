@@ -155,5 +155,37 @@ def launch_command(cfg, key, thread, prompt):
     return f"cd {shlex.quote(str(cfg.root))} && {env} {cmd} {shlex.quote(prompt)}"
 
 
+def find_session(sid):
+    """(tool, full session id, transcript path, cwd) for a past session id or id prefix, or None."""
+    hits = [("claude", f) for f in (CLAUDE_HOME / "projects").glob(f"*/{sid}*.jsonl")]
+    hits += [("codex", f) for f in (CODEX_HOME / "sessions").glob(f"*/*/*/rollout-*{sid}*.jsonl")]
+    if len(hits) != 1:
+        return None
+    tool, path = hits[0]
+    full = path.stem if tool == "claude" else path.stem[-36:]
+    cwd = ""
+    with open(path) as f:
+        for _, line in zip(range(50), f):
+            try:
+                d = json.loads(line)
+            except ValueError:
+                continue
+            cwd = d.get("cwd") or (d.get("payload") or {}).get("cwd") or ""
+            if cwd:
+                break
+    return tool, full, str(path), cwd
+
+
+def resume_command(cfg, key, thread, tool, sid, cwd):
+    """Shell line that reopens a past session. Claude looks sessions up by project directory, so this
+    starts in the session's original cwd rather than root."""
+    env = " ".join(
+        f"{k}={shlex.quote(v)}" for k, v in (("HERD_TOPIC", key), ("HERD_THREAD", thread)) if v
+    )
+    base = cfg.agent_command(key, tool)
+    cmd = f"{base} --resume {shlex.quote(sid)}" if tool == "claude" else f"{base} resume {shlex.quote(sid)}"
+    return f"cd {shlex.quote(cwd or str(cfg.root))} && {env + ' ' if env else ''}{cmd}"
+
+
 def pid_alive(pid):
     return subprocess.run(["kill", "-0", str(pid)], capture_output=True).returncode == 0

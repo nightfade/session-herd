@@ -21,6 +21,7 @@ All actions go through the `herd` CLI:
 | `herd wait <id> [--parked]` | block until it is idle, or has handed off |
 | `herd close <id>` | exit and close the tab; refused until it has handed off |
 | `herd tag <id> <topic> [thread]` | assign a topic to an unclassified session |
+| `herd resume <session-id> [--topic T] [--thread X]` | reopen a closed session in a new tab |
 | `herd topics`, `herd add …` | list or register topics |
 | `herd config` | defaults, the `[manager]` notes, every topic |
 
@@ -53,6 +54,7 @@ All actions go through the `herd` CLI:
      - Codex: `herd send <id> "use the park skill to wrap up"`. Codex does not run custom slash commands.
   3. Run `herd wait <id> --parked --timeout 300` for each.
   4. Report the results, then ask once whether to close them. Close with `herd close` only if the user agrees.
+- **"Reopen yesterday's session about X"**: find it by grepping recent transcripts (`~/.claude/projects/*/*.jsonl`, `~/.codex/sessions/*/*/*/*.jsonl`) for X. Confirm the match from its last turns, then `herd resume <session-id> --topic <topic>`.
 - **"Tell X …"**: forward the user's own words, or `/park`, with `herd send`. Do not invent instructions.
 - **A stray thought**:
   - It belongs to an open topic whose session is idle: offer to pass it there.

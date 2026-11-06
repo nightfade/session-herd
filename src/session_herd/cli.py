@@ -164,6 +164,26 @@ def cmd_open(ctx, args):
     print(ctx.m("opened", label=label, tool=t.get("tool", "claude")))
 
 
+def cmd_resume(ctx, args):
+    found = agents.find_session(args.session)
+    if not found:
+        sys.exit(ctx.m("no_session", sid=args.session))
+    tool, sid, _, cwd = found
+    open_rows = [r for r in ctx.rows() if r.session_id == sid]
+    if open_rows:
+        ctx.backend.focus(open_rows[0].terminal)
+        print(ctx.m("focused", id=open_rows[0].id, label=open_rows[0].label or open_rows[0].title))
+        return
+    key = args.topic or ""
+    if key and key not in ctx.cfg.topics:
+        sys.exit(ctx.m("unknown_topic", key=key, known=", ".join(ctx.cfg.topics)))
+    t = ctx.cfg.topics.get(key, {})
+    label = (t.get("label") or key or sid[:8]) + (f"·{args.thread}" if args.thread else "")
+    command = agents.resume_command(ctx.cfg, key, args.thread, tool, sid, cwd)
+    ctx.backend.open(command, key, args.thread, label, COLORS.get(t.get("color", "gray"), COLORS["gray"]))
+    print(ctx.m("resumed", label=label, tool=tool, sid=sid[:8]))
+
+
 def cmd_tag(ctx, args):
     if args.topic not in ctx.cfg.topics:
         sys.exit(ctx.m("unknown_topic", key=args.topic, known=", ".join(ctx.cfg.topics)))
@@ -361,6 +381,11 @@ def build_parser():
     s.add_argument("thread", nargs="?", default="", help="a second line of work under the same topic")
     s.add_argument("--new", action="store_true", help="open another one even if the topic is open")
 
+    s = sub.add_parser("resume", help="reopen a past (closed) session in a new tab")
+    s.add_argument("session", help="session id or id prefix (Claude or Codex)")
+    s.add_argument("--topic", help="tag the tab with this topic; its scope picks the launch flags")
+    s.add_argument("--thread", default="")
+
     s = sub.add_parser("tag", help="assign a topic to a session that was not opened with herd")
     s.add_argument("id")
     s.add_argument("topic")
@@ -400,6 +425,7 @@ COMMANDS = {
     "wait": cmd_wait,
     "close": cmd_close,
     "open": cmd_open,
+    "resume": cmd_resume,
     "tag": cmd_tag,
     "topics": cmd_topics,
     "add": cmd_add,

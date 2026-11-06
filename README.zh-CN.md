@@ -35,6 +35,7 @@ herd install                                 # 装上状态 hook 和 /park、/he
 | 看所有 session | `herd status` |
 | 加话题 | `herd add garden --label 园艺 --dir notes/garden --kind think` |
 | 离开一个 session | 在里面输入 `/park`，然后关 tab |
+| 重新打开已关闭的 session | `herd resume <session-id> --topic api`，按 id 自动判断是 Claude 还是 Codex，在它原来的目录里接回对话 |
 | 总管 | `herd open herd`，或在任意 Claude session 里输入 `/herd` |
 
 建议配一个简写：`alias t='herd open'`。
